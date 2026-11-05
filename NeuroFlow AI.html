@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NeuroFlow AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#04123f;--bg2:#0a2a8a;--accent:#6fd3ff;--accent2:#1d6fd6;--text:#f4f8ff;--muted:#a9c4ee;--card:rgba(255,255,255,.06);--line:rgba(111,211,255,.25);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box;margin:0}
+body{background:radial-gradient(ellipse at 50% 0%,var(--bg2),var(--bg1) 70%) fixed;color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+canvas#net{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+main{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:48px 24px 72px;text-align:center}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:clamp(2.6rem,8vw,4.8rem);letter-spacing:.01em}
+.logo span{background:linear-gradient(90deg,var(--accent),#bdeaff,var(--accent));background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite}
+@keyframes shine{to{background-position:200% center}}
+.tag{font-family:'Playfair Display',Georgia,serif;font-weight:500;font-size:clamp(1.2rem,3.4vw,2rem);margin-top:14px;color:var(--text);opacity:0;animation:up 1s .3s forwards}
+.rule{width:80px;height:2px;margin:26px auto;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.brainwrap{position:relative;width:min(340px,70vw);margin:10px auto 40px;animation:float 6s ease-in-out infinite}
+.brainwrap::before{content:"";position:absolute;inset:-15%;background:radial-gradient(circle,rgba(111,211,255,.35),transparent 65%);animation:pulse 3s ease-in-out infinite;border-radius:50%}
+.brainwrap svg{position:relative;width:100%;height:auto;overflow:visible}
+.hemi{fill:#1668c9;stroke:#fff;stroke-width:5;stroke-linejoin:round}
+.fold{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round;stroke-dasharray:60;animation:fold 3.5s ease-in-out infinite}
+.fold:nth-of-type(2n){animation-delay:.8s}.fold:nth-of-type(3n){animation-delay:1.6s}
+.ray{stroke:var(--accent);stroke-width:5;stroke-linecap:round;animation:ray 2s ease-in-out infinite}
+.ray:nth-of-type(2n){animation-delay:.4s}.ray:nth-of-type(3n){animation-delay:.8s}
+@keyframes fold{0%,100%{stroke-dashoffset:60;opacity:.4}50%{stroke-dashoffset:0;opacity:1}}
+@keyframes ray{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(.9);opacity:.6}50%{transform:scale(1.1);opacity:1}}
+@keyframes float{50%{transform:translateY(-12px)}}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px 22px;backdrop-filter:blur(8px);transition:transform .25s,border-color .25s,box-shadow .25s;opacity:0;transform:translateY(30px)}
+.card.in{opacity:1;transform:translateY(0);transition:opacity .8s,transform .8s,border-color .25s,box-shadow .25s}
+.card:hover{border-color:var(--accent);box-shadow:0 18px 50px rgba(0,10,60,.5),0 0 30px rgba(111,211,255,.18)}
+.icon{width:104px;height:104px;border-radius:50%;margin:0 auto 22px;background:#7ad8ff;display:grid;place-items:center;position:relative}
+.icon::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:1px solid var(--accent);animation:ring 2.6s ease-out infinite}
+@keyframes ring{from{transform:scale(.9);opacity:.8}to{transform:scale(1.35);opacity:0}}
+.icon svg{width:58px;height:58px;stroke:#0a2a7a;fill:none;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-weight:600;font-size:1.15rem;line-height:1.35}
+.card p{color:var(--muted);font-weight:300;font-size:.92rem;margin-top:10px;line-height:1.5}
+#pupil{transition:transform .08s}
+.steam path{stroke-dasharray:14;animation:steam 2.4s ease-in-out infinite}
+.steam path:nth-child(2){animation-delay:.5s}.steam path:nth-child(3){animation-delay:1s}
+@keyframes steam{0%{stroke-dashoffset:14;opacity:0}50%{opacity:1}100%{stroke-dashoffset:-14;opacity:0}}
+.lock{transform-origin:50% 60%;animation:lock 4s ease-in-out infinite}
+@keyframes lock{0%,80%,100%{transform:scale(1)}90%{transform:scale(1.15)}}
+.meter{margin:56px auto 0;max-width:460px;text-align:left}
+.meter label{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.bar{height:6px;border-radius:6px;background:rgba(255,255,255,.12);margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;width:50%;border-radius:6px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+.state{margin-top:12px;font-family:'Playfair Display',Georgia,serif;font-size:1.1rem;text-align:center;min-height:1.6em}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.card{opacity:1;transform:none}.tag{opacity:1}}
+</style>
+</head>
+<body>
+<canvas id="net"></canvas>
+<main>
+  <h1 class="logo">Neuro<span>Flow AI</span></h1>
+  <p class="tag">Your brain needs a good rhythm too.</p>
+  <div class="rule"></div>
+
+  <div class="brainwrap">
+    <svg viewBox="-40 -10 280 150" aria-label="Brain">
+      <g>
+        <line class="ray" x1="-35" y1="65" x2="-12" y2="65"/><line class="ray" x1="-28" y1="25" x2="-10" y2="38"/><line class="ray" x1="-28" y1="105" x2="-10" y2="92"/>
+        <line class="ray" x1="235" y1="65" x2="212" y2="65"/><line class="ray" x1="228" y1="25" x2="210" y2="38"/><line class="ray" x1="228" y1="105" x2="210" y2="92"/>
+      </g>
+      <g id="h">
+        <path class="hemi" d="M97 14C80 2 56 8 50 28C34 30 24 48 32 62C22 76 32 98 50 100C54 118 80 128 97 116Z"/>
+        <path class="fold" d="M62 44C70 36 80 38 84 46"/><path class="fold" d="M46 66C56 62 66 66 68 74"/><path class="fold" d="M52 92C62 90 72 84 76 78"/><path class="fold" d="M70 108C78 104 84 98 86 92"/>
+      </g>
+      <g transform="translate(200,0) scale(-1,1)">
+        <path class="hemi" d="M97 14C80 2 56 8 50 28C34 30 24 48 32 62C22 76 32 98 50 100C54 118 80 128 97 116Z"/>
+        <path class="fold" d="M60 40C68 32 80 36 84 44"/><path class="fold" d="M44 64C54 60 66 64 68 72"/><path class="fold" d="M54 90C64 90 74 82 78 76"/><path class="fold" d="M68 106C76 102 84 96 86 90"/>
+      </g>
+    </svg>
+  </div>
+
+  <section class="grid">
+    <article class="card">
+      <div class="icon"><svg viewBox="0 0 64 64"><path d="M4 32C14 16 50 16 60 32C50 48 14 48 4 32Z"/><circle cx="32" cy="32" r="9"/><circle id="pupil" cx="32" cy="32" r="3" fill="#0a2a7a"/></svg></div>
+      <h3>Detects your focus level</h3><p>Analyzes your attention in real time to understand how your mind works.</p>
+    </article>
+    <article class="card">
+      <div class="icon"><svg viewBox="0 0 64 64"><g class="steam"><path d="M24 6c-3 4 3 6 0 10"/><path d="M32 6c-3 4 3 6 0 10"/><path d="M40 6c-3 4 3 6 0 10"/></g><path d="M14 26h32v8c0 9-6 15-16 15s-16-6-16-15z"/><path d="M46 29h4a5 5 0 010 10h-5"/><path d="M12 56h36"/></svg></div>
+      <h3>Gives you smart breaks</h3><p>Suggests rest at just the right moment to restore energy and clarity.</p>
+    </article>
+    <article class="card">
+      <div class="icon"><svg viewBox="0 0 64 64"><path d="M32 6l20 7v16c0 14-9 24-20 29C21 53 12 43 12 29V13z"/><g class="lock"><rect x="24" y="30" width="16" height="13" rx="2" fill="#0a2a7a"/><path d="M27 30v-4a5 5 0 0110 0v4"/></g></svg></div>
+      <h3>Your video stays private</h3><p>Processing is secure and confidential: your image never leaves your control.</p>
+    </article>
+  </section>
+
+  <div class="meter">
+    <label><span>Focus level</span><span id="pct">50%</span></label>
+    <div class="bar"><i id="fill"></i></div>
+    <div class="state" id="state">Calibrating…</div>
+  </div>
+</main>
+
+<script>
+// Fondo: red neuronal de partículas
+(function(){
+  var c=document.getElementById('net'),x=c.getContext('2d'),P=[],W,H,m={x:-999,y:-999};
+  function size(){W=c.width=innerWidth;H=c.height=innerHeight;P=[];var n=Math.min(70,Math.floor(W*H/18000));
+    for(var i=0;i<n;i++)P.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4});}
+  addEventListener('resize',size);size();
+  addEventListener('pointermove',function(e){m.x=e.clientX;m.y=e.clientY});
+  function f(){x.clearRect(0,0,W,H);
+    P.forEach(function(p,i){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+      x.fillStyle='rgba(111,211,255,.7)';x.beginPath();x.arc(p.x,p.y,1.8,0,6.3);x.fill();
+      for(var j=i+1;j<P.length;j++){var q=P[j],d=Math.hypot(p.x-q.x,p.y-q.y);
+        if(d<130){x.strokeStyle='rgba(111,211,255,'+(.22*(1-d/130))+')';x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.stroke();}}
+      var dm=Math.hypot(p.x-m.x,p.y-m.y);
+      if(dm<160){x.strokeStyle='rgba(190,235,255,'+(.4*(1-dm/160))+')';x.beginPath();x.moveTo(p.x,p.y);x.lineTo(m.x,m.y);x.stroke();}
+    });requestAnimationFrame(f);}
+  f();
+})();
+
+// Aparición al hacer scroll
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){
+  var i=[].indexOf.call(document.querySelectorAll('.card'),e.target);
+  setTimeout(function(){e.target.classList.add('in')},i*180);io.unobserve(e.target);}})},{threshold:.2});
+document.querySelectorAll('.card').forEach(function(c){io.observe(c)});
+
+// La pupila sigue el cursor
+var pupil=document.getElementById('pupil');
+addEventListener('pointermove',function(e){var r=pupil.getBoundingClientRect(),
+  dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),d=Math.hypot(dx,dy)||1,k=Math.min(6,d/40);
+  pupil.style.transform='translate('+(dx/d*k)+'px,'+(dy/d*k)+'px)';});
+
+// Medidor de foco simulado
+var states=[[85,'Deep focus'],[62,'Steady attention'],[38,'Time for a break'],[92,'Peak flow'],[55,'Regaining your rhythm']],s=0;
+function tick(){var v=states[s%states.length];s++;
+  document.getElementById('fill').style.width=v[0]+'%';
+  document.getElementById('pct').textContent=v[0]+'%';
+  document.getElementById('state').textContent=v[1];}
+setTimeout(tick,600);setInterval(tick,3500);
+</script>
+</body>
+</html>
